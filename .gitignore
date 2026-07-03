@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Database
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Streamlit cache
+.streamlit/
+
+# Large generated data
+knowledge/raw/
+knowledge/parsed/
+knowledge/chunks/
+knowledge/embeddings/
+knowledge/index/
+
+# OS
+.DS_Store
+Thumbs.db

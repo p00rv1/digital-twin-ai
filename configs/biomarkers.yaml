@@ -1,0 +1,32 @@
+biomarkers:
+  - name: ALT
+    organ: Liver
+    query: "ALT liver biomarker review"
+
+  - name: AST
+    organ: Liver
+    query: "AST liver biomarker review"
+
+  - name: Bilirubin
+    organ: Liver
+    query: "bilirubin liver disease review"
+
+  - name: Albumin
+    organ: Liver
+    query: "albumin liver function review"
+
+  - name: Creatinine
+    organ: Kidney
+    query: "creatinine kidney biomarker review"
+
+  - name: eGFR
+    organ: Kidney
+    query: "eGFR chronic kidney disease review"
+
+  - name: Hemoglobin
+    organ: Blood
+    query: "hemoglobin complete blood count review"
+
+  - name: Platelet Count
+    organ: Blood
+    query: "platelet count clinical review"
