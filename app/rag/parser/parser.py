@@ -81,7 +81,7 @@ class MedicalParser:
 
                     return year
 
-            except:
+            except ValueError:
 
                 pass
 
