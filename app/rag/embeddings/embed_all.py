@@ -50,126 +50,64 @@ class EmbeddingPipeline:
     def build_embeddings(self):
 
         chunks = self.load_chunks()
+        if not chunks:
+            print("No chunks found to embed.")
+            return
 
-        vectors = []
+        texts = [chunk["text"] for chunk in chunks]
+        lookup = [chunk["chunk_id"] for chunk in chunks]
 
-        metadata = []
-
-        lookup=[]
-
-        for chunk in chunks:
-
-            vector = self.embedder.embed(
-
-                chunk["text"]
-
-            )
-
-            vectors.append(vector)
-
-            metadata.append(chunk)
-
-            lookup.append(
-        chunk["chunk_id"]
-    )
-        vectors = np.array(
-
-            vectors,
-
-            dtype=np.float32
-
+        # Batched vector encoding
+        print(f"Generating embeddings for {len(chunks)} chunks in batches...")
+        vectors = self.embedder.model.encode(
+            texts,
+            batch_size=64,
+            show_progress_bar=True,
+            normalize_embeddings=True
         )
+
+        # Upsert into Qdrant Vector DB
+        try:
+            from app.rag.retrieval.qdrant_service import QdrantService
+            qdrant = QdrantService()
+            qdrant.upsert_chunks(chunks, vectors)
+            print(f"Upserted {len(chunks)} chunks into Qdrant Vector DB.")
+        except Exception as e:
+            print(f"Warning: Qdrant upsert failed ({e}), falling back to file saves.")
+
+        vectors_np = np.array(vectors, dtype=np.float32)
 
         np.save(
-
-            self.embedding_dir /
-
-            "chunk_vectors.npy",
-
-            vectors
-
+            self.embedding_dir / "chunk_vectors.npy",
+            vectors_np
         )
 
         with open(
-
-            self.embedding_dir /
-
-            "metadata.json",
-
+            self.embedding_dir / "metadata.json",
             "w",
-
             encoding="utf-8"
-
         ) as f:
+            json.dump(chunks, f, indent=4)
 
-            json.dump(
-
-                metadata,
-
-                f,
-
-                indent=4
-            )
         lookup_dict = {
-
-        str(i): chunk_id
-
-        for i, chunk_id
-
-        in enumerate(lookup)
-
-    }
+            str(i): chunk_id
+            for i, chunk_id in enumerate(lookup)
+        }
         with open(
-
-        self.embedding_dir /
-
-        "chunk_lookup.json",
-
-        "w",
-
-        encoding="utf-8"
-
-    ) as f:
-
-            json.dump(
-
-                lookup_dict,
-
-                f,
-
-                indent=4
-
-            )
-        
-        metadata_lookup = {}
-
-        for chunk in metadata:
-
-            metadata_lookup[
-                chunk["chunk_id"]
-            ] = chunk
-        with open(
-
-            self.embedding_dir /
-
-            "metadata_by_id.json",
-
+            self.embedding_dir / "chunk_lookup.json",
             "w",
-
             encoding="utf-8"
-
         ) as f:
+            json.dump(lookup_dict, f, indent=4)
 
-            json.dump(
+        metadata_lookup = {
+            chunk["chunk_id"]: chunk for chunk in chunks
+        }
+        with open(
+            self.embedding_dir / "metadata_by_id.json",
+            "w",
+            encoding="utf-8"
+        ) as f:
+            json.dump(metadata_lookup, f, indent=4)
 
-                metadata_lookup,
-
-                f,
-
-                indent=4
-
-            )
-        print(
-
-            f"Embedded {len(chunks)} chunks"
-        )
+        print(f"Embedded & indexed {len(chunks)} chunks.")
