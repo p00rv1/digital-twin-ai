@@ -1,0 +1,16 @@
+streamlit
+pandas
+plotly
+groq
+python-dotenv
+faiss-cpu
+numpy
+sentence-transformers
+rank-bm25
+requests
+beautifulsoup4
+lxml
+pydantic
+sqlalchemy
+psycopg2-binary
+nltk

@@ -4,12 +4,15 @@ from .etl_db import (
     SessionLocal,
     Document,
     Failure,
-    PipelineRun
+    PipelineRun,
+    create_tables
 )
 
 class DocumentRepository:
 
     def __init__(self):
+
+        create_tables()
 
         self.db: Session = SessionLocal()
 

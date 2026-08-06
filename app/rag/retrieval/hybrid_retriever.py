@@ -1,12 +1,26 @@
 from app.rag.retrieval.retriever import MedicalRetriever
 from app.rag.retrieval.bm25_retriever import BM25Retriever
+from app.rag.retrieval.build_index import build_knowledge_base, is_knowledge_base_ready
+
+
 class HybridRetriever:
 
     def __init__(self):
+        if not is_knowledge_base_ready():
+            build_knowledge_base()
 
-        self.faiss = MedicalRetriever()
-
-        self.bm25 = BM25Retriever()
+        try:
+            self.faiss = MedicalRetriever()
+            self.bm25 = BM25Retriever()
+        except FileNotFoundError:
+            build_knowledge_base()
+            try:
+                self.faiss = MedicalRetriever()
+                self.bm25 = BM25Retriever()
+            except Exception as e:
+                print(f"Failed to initialize retrievers: {e}")
+                self.faiss = None
+                self.bm25 = None
 
         self.k_rrf = 60
     def reciprocal_rank_fusion(
@@ -65,6 +79,8 @@ class HybridRetriever:
         query,
         k=10
     ):
+        if not self.faiss or not self.bm25:
+            return []
 
         dense = self.faiss.retrieve(
             query,

@@ -285,3 +285,31 @@ class MedicalParser:
         )
 
         return document
+
+    def run(self):
+        from app.rag.ingestion.repository import DocumentRepository
+        from app.rag.ingestion.models import PaperMetadata
+
+        repo = DocumentRepository()
+        documents = repo.get_downloaded_documents()
+        parsed_count = 0
+
+        if documents:
+            for doc in documents:
+                xml_path = self.raw_dir / f"{doc.document_id}.xml"
+                if xml_path.exists():
+                    self.parse_document(xml_path, doc)
+                    repo.mark_parsed(doc.document_id)
+                    parsed_count += 1
+        else:
+            for xml_path in self.raw_dir.glob("*.xml"):
+                doc_id = xml_path.stem
+                meta = PaperMetadata(
+                    title=doc_id, abstract="", authors=[], journal="",
+                    year=2024, pmcid=doc_id.replace("PMC_", ""), pmid=None, doi=None,
+                    source="Europe PMC", biomarker="liver", organ="liver"
+                )
+                self.parse_document(xml_path, meta)
+                parsed_count += 1
+
+        print(f"Parsed {parsed_count} documents")
