@@ -55,6 +55,10 @@ gender = snapshot.get("gender", "Unknown")
 
 st.caption(f"**Patient ID:** {patient_id} | **Age:** {age} | **Gender:** {gender}")
 
+if not snapshot.get("db_connected", True):
+    st.info("ℹ️ **Demonstration Mode**: Live PostgreSQL database is not connected. Displaying sample clinical snapshot data. (To connect your cloud database, set `DATABASE_URL` in Streamlit Secrets).")
+
+
 biomarkers = snapshot.get("biomarkers", {})
 cols = st.columns(4)
 
