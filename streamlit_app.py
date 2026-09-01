@@ -32,173 +32,160 @@ patient_id = st.sidebar.number_input(
     step=1
 )
 
-analyze = st.sidebar.button(
-    "Analyze Patient",
-    use_container_width=True
-)
+# ---------------------------------------------------
+# Patient Selection & Initial Load
+# ---------------------------------------------------
 
-@st.cache_resource(show_spinner="Loading AI Diagnosis Pipeline & Medical Models...")
+from app.snapshot.patient_snapshot import get_patient_snapshot
+
+snapshot = get_patient_snapshot(patient_id)
+
+@st.cache_resource(show_spinner="Loading AI Pipeline & Medical Models...")
 def get_pipeline():
     return DiagnosisPipeline()
 
 # ---------------------------------------------------
-# Run Pipeline
+# Patient Snapshot Header
+# ---------------------------------------------------
+
+st.header("🩺 Patient Snapshot")
+
+age = snapshot.get("age", 45)
+gender = snapshot.get("gender", "Unknown")
+
+st.caption(f"**Patient ID:** {patient_id} | **Age:** {age} | **Gender:** {gender}")
+
+biomarkers = snapshot.get("biomarkers", {})
+cols = st.columns(4)
+
+i = 0
+for biomarker, info in biomarkers.items():
+    analytics = info["analytics"]
+    if analytics is None:
+        continue
+
+    latest = round(analytics["latest"], 2)
+    change = analytics["percent_change"]
+    arrow = "⬆️" if change >= 0 else "⬇️"
+
+    cols[i % 4].metric(
+        biomarker.upper(),
+        latest,
+        f"{change}% {arrow}"
+    )
+    i += 1
+
+st.divider()
+
+# ---------------------------------------------------
+# Clinical Risk & Fibrosis Scoring
+# ---------------------------------------------------
+
+st.header("📊 Clinical Risk & Fibrosis Assessment")
+
+clinical_scores = snapshot.get("clinical_scores", {})
+
+r_col1, r_col2, r_col3 = st.columns(3)
+
+with r_col1:
+    fib4 = clinical_scores.get("fib4_index")
+    fib4_risk = clinical_scores.get("fib4_risk", "N/A")
+    st.metric("FIB-4 Index", fib4 if fib4 is not None else "N/A")
+    st.caption(f"**Risk Tier:** {fib4_risk}")
+
+with r_col2:
+    de_ritis = clinical_scores.get("de_ritis_ratio")
+    de_ritis_risk = clinical_scores.get("de_ritis_risk", "N/A")
+    st.metric("De Ritis Ratio (AST/ALT)", de_ritis if de_ritis is not None else "N/A")
+    st.caption(f"**Pattern:** {de_ritis_risk}")
+
+with r_col3:
+    apri = clinical_scores.get("apri_score")
+    apri_risk = clinical_scores.get("apri_risk", "N/A")
+    st.metric("APRI Score", apri if apri is not None else "N/A")
+    st.caption(f"**Risk Tier:** {apri_risk}")
+
+st.divider()
+
+# ---------------------------------------------------
+# Biomarker Trends & ML Trajectory Forecasting
+# ---------------------------------------------------
+
+st.header("📈 Biomarker Trends & 6-Month Trajectory Projection")
+
+selected = st.selectbox(
+    "Choose Biomarker",
+    list(biomarkers.keys())
+)
+
+history = biomarkers[selected]["history"]
+analytics = biomarkers[selected]["analytics"]
+
+if history:
+    import plotly.graph_objects as go
+
+    df = pd.DataFrame(history)
+    df["date"] = pd.to_datetime(df["date"])
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=df["date"],
+        y=df["value"],
+        mode='lines+markers',
+        name='Historical Lab Value',
+        line=dict(color='#1f77b4', width=3),
+        marker=dict(size=8)
+    ))
+
+    if analytics and analytics.get("forecast"):
+        forecast = analytics["forecast"]
+        last_date = df["date"].iloc[-1]
+        last_val = df["value"].iloc[-1]
+
+        f_dates = [last_date, pd.to_datetime(forecast["future_date_90d"]), pd.to_datetime(forecast["future_date_180d"])]
+        f_vals = [last_val, forecast["projected_90d"], forecast["projected_180d"]]
+
+        fig.add_trace(go.Scatter(
+            x=f_dates,
+            y=f_vals,
+            mode='lines+markers',
+            name=f'ML Projection ({forecast["trajectory"]})',
+            line=dict(color='#ff7f0e', width=3, dash='dash'),
+            marker=dict(size=8, symbol='diamond')
+        ))
+
+    fig.update_layout(
+        title=f"{selected.upper()} Historical & Projected Trajectory",
+        xaxis_title="Date",
+        yaxis_title="Value",
+        hovermode="x unified"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+st.divider()
+
+# ---------------------------------------------------
+# AI Diagnosis Execution
 # ---------------------------------------------------
 
 if analyze:
-
+    status_box = st.status("🧠 Running Clinical AI Pipeline & Hybrid RAG Search...", expanded=True)
+    status_box.write("Step 1/3: Loading Medical Models & FAISS Vector Index...")
     pipeline = get_pipeline()
 
-    with st.spinner("Analyzing patient..."):
+    status_box.write("Step 2/3: Searching PubMed Literature & Re-ranking Evidence...")
+    result = pipeline.run(patient_id)
+    status_box.write("Step 3/3: Generating Evidence-Based Diagnosis via Groq LLM...")
+    status_box.update(label="✅ Clinical AI Pipeline Completed!", state="complete", expanded=False)
 
-        result = pipeline.run(patient_id)
-
-    snapshot = result["snapshot"]
     query = result["query"]
     evidence = result["evidence"]
     diagnosis = result["diagnosis"]
-
-    # =====================================================
-    # Patient Snapshot
-    # =====================================================
-
-    st.header("🩺 Patient Snapshot")
-
-    age = snapshot.get("age", 45)
-    gender = snapshot.get("gender", "Unknown")
-
-    st.caption(f"**Age:** {age} | **Gender:** {gender}")
-
-    biomarker_data = []
-
-    biomarkers = snapshot.get("biomarkers", {})
-
-    cols = st.columns(4)
-
-    i = 0
-
-    for biomarker, info in biomarkers.items():
-
-        analytics = info["analytics"]
-
-        if analytics is None:
-            continue
-
-        latest = round(analytics["latest"], 2)
-
-        change = analytics["percent_change"]
-
-        arrow = "⬆️" if change >= 0 else "⬇️"
-
-        cols[i % 4].metric(
-            biomarker.upper(),
-            latest,
-            f"{change}% {arrow}"
-        )
-
-        biomarker_data.append({
-            "Biomarker": biomarker.upper(),
-            "Latest": latest,
-            "Change": change
-        })
-
-        i += 1
-
-    st.divider()
-
-    # =====================================================
-    # Clinical Risk & Fibrosis Scoring
-    # =====================================================
-
-    st.header("📊 Clinical Risk & Fibrosis Assessment")
-
-    clinical_scores = snapshot.get("clinical_scores", {})
-
-    r_col1, r_col2, r_col3 = st.columns(3)
-
-    with r_col1:
-        fib4 = clinical_scores.get("fib4_index")
-        fib4_risk = clinical_scores.get("fib4_risk", "N/A")
-        st.metric("FIB-4 Index", fib4 if fib4 is not None else "N/A")
-        st.caption(f"**Risk Tier:** {fib4_risk}")
-
-    with r_col2:
-        de_ritis = clinical_scores.get("de_ritis_ratio")
-        de_ritis_risk = clinical_scores.get("de_ritis_risk", "N/A")
-        st.metric("De Ritis Ratio (AST/ALT)", de_ritis if de_ritis is not None else "N/A")
-        st.caption(f"**Pattern:** {de_ritis_risk}")
-
-    with r_col3:
-        apri = clinical_scores.get("apri_score")
-        apri_risk = clinical_scores.get("apri_risk", "N/A")
-        st.metric("APRI Score", apri if apri is not None else "N/A")
-        st.caption(f"**Risk Tier:** {apri_risk}")
-
-    st.divider()
-
-    # =====================================================
-    # Biomarker Trends & ML Trajectory Forecasting
-    # =====================================================
-
-    st.header("📈 Biomarker Trends & 6-Month Trajectory Projection")
-
-    selected = st.selectbox(
-        "Choose Biomarker",
-        list(biomarkers.keys())
-    )
-
-    history = biomarkers[selected]["history"]
-    analytics = biomarkers[selected]["analytics"]
-
-    if history:
-        import plotly.graph_objects as go
-
-        df = pd.DataFrame(history)
-        df["date"] = pd.to_datetime(df["date"])
-
-        fig = go.Figure()
-
-        # Historical curve
-        fig.add_trace(go.Scatter(
-            x=df["date"],
-            y=df["value"],
-            mode='lines+markers',
-            name='Historical Lab Value',
-            line=dict(color='#1f77b4', width=3),
-            marker=dict(size=8)
-        ))
-
-        # Add Forecast points if available
-        if analytics and analytics.get("forecast"):
-            forecast = analytics["forecast"]
-            last_date = df["date"].iloc[-1]
-            last_val = df["value"].iloc[-1]
-
-            f_dates = [last_date, pd.to_datetime(forecast["future_date_90d"]), pd.to_datetime(forecast["future_date_180d"])]
-            f_vals = [last_val, forecast["projected_90d"], forecast["projected_180d"]]
-
-            fig.add_trace(go.Scatter(
-                x=f_dates,
-                y=f_vals,
-                mode='lines+markers',
-                name=f'ML Projection ({forecast["trajectory"]})',
-                line=dict(color='#ff7f0e', width=3, dash='dash'),
-                marker=dict(size=8, symbol='diamond')
-            ))
-
-        fig.update_layout(
-            title=f"{selected.upper()} Historical & Projected Trajectory",
-            xaxis_title="Date",
-            yaxis_title="Value",
-            hovermode="x unified"
-        )
-
-        st.plotly_chart(
-            fig,
-            use_container_width=True
-        )
-
-    st.divider()
 
 
     # =====================================================
@@ -251,7 +238,6 @@ if analyze:
 
     st.divider()
 
-
     # =====================================================
     # Diagnosis
     # =====================================================
@@ -263,55 +249,24 @@ if analyze:
         c1, c2 = st.columns([3, 1])
 
         with c1:
-
             st.subheader(diagnosis.get("diagnosis", ""))
 
         with c2:
-
             confidence = diagnosis.get("confidence", 0)
-
-            st.metric(
-                "Confidence",
-                f"{confidence}%"
-            )
+            st.metric("Confidence", f"{confidence}%")
 
         st.markdown("### Reasoning")
-
-        st.write(
-            diagnosis.get("reasoning", "")
-        )
+        st.write(diagnosis.get("reasoning", ""))
 
         st.markdown("### Supporting Biomarkers")
-
-        st.write(
-            diagnosis.get(
-                "supporting_biomarkers",
-                []
-            )
-        )
+        st.write(diagnosis.get("supporting_biomarkers", []))
 
         st.markdown("### Recommended Tests")
-
-        st.write(
-            diagnosis.get(
-                "recommended_tests",
-                []
-            )
-        )
+        st.write(diagnosis.get("recommended_tests", []))
 
         st.markdown("### Supporting Papers")
-
-        st.write(
-            diagnosis.get(
-                "supporting_papers",
-                []
-            )
-        )
+        st.write(diagnosis.get("supporting_papers", []))
 
     else:
-
         st.write(diagnosis)
-
-else:
-
-    st.info("👈 **Welcome to Digital Twin AI Decision Support System**\n\nSelect a Patient ID from the sidebar and click **Analyze Patient** to view patient snapshot, biomarker trends, clinical evidence, and AI diagnosis.")
+
