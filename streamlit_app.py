@@ -32,6 +32,12 @@ patient_id = st.sidebar.number_input(
     step=1
 )
 
+analyze = st.sidebar.button(
+    "Analyze Patient",
+    use_container_width=True
+)
+
+
 # ---------------------------------------------------
 # Patient Selection & Initial Load
 # ---------------------------------------------------
