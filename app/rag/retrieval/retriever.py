@@ -106,22 +106,15 @@ class MedicalRetriever:
 
             ]
 
-            chunk = self.metadata[
+            chunk = self.metadata.get(chunk_id)
 
-                chunk_id
-
-            ]
-
-            results.append(
-
-                {
-
-                    "score": float(score),
-
-                    **chunk
-
-                }
-
-            )
+            if chunk:
+                results.append(
+                    {
+                        "score": float(score),
+                        **chunk
+                    }
+                )
 
         return results
+

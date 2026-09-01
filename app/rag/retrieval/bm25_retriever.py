@@ -79,18 +79,14 @@ class BM25Retriever:
 
             chunk_id = self.lookup[idx]
 
-            chunk = self.metadata[chunk_id]
+            chunk = self.metadata.get(chunk_id)
 
-            results.append(
+            if chunk:
+                results.append(
+                    {
+                        "score": float(score),
+                        **chunk
+                    }
+                )
 
-                {
-
-                    "score": float(score),
-
-                    **chunk
-
-                }
-
-            )
-
-        return results
+        return results
