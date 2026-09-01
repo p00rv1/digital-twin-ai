@@ -8,7 +8,10 @@ class HybridRetriever:
 
     def __init__(self):
         if not is_knowledge_base_ready():
-            build_knowledge_base()
+            try:
+                build_knowledge_base()
+            except Exception as e:
+                print(f"Warning: Could not build knowledge base automatically: {e}")
 
         try:
             self.qdrant = QdrantService()
@@ -19,17 +22,13 @@ class HybridRetriever:
         try:
             self.faiss = MedicalRetriever()
             self.bm25 = BM25Retriever()
-        except FileNotFoundError:
-            build_knowledge_base()
-            try:
-                self.faiss = MedicalRetriever()
-                self.bm25 = BM25Retriever()
-            except Exception as e:
-                print(f"Failed to initialize retrievers: {e}")
-                self.faiss = None
-                self.bm25 = None
+        except Exception as e:
+            print(f"Retriever initialization warning: {e}")
+            self.faiss = None
+            self.bm25 = None
 
         self.k_rrf = 60
+
 
     def reciprocal_rank_fusion(
         self,

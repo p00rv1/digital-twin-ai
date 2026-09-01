@@ -19,9 +19,9 @@ def is_knowledge_base_ready() -> bool:
         root / "knowledge" / "indexes" / "bm25_lookup.json",
         root / "knowledge" / "embeddings" / "chunk_lookup.json",
         root / "knowledge" / "embeddings" / "metadata_by_id.json",
-        root / "knowledge" / "embeddings" / "chunk_vectors.npy",
     ]
     return all(f.exists() and f.stat().st_size > 0 for f in required_files)
+
 
 
 def build_knowledge_base(force: bool = False) -> bool:
