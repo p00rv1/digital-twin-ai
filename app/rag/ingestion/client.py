@@ -81,7 +81,7 @@ class EuropePMCClient:
 
             try:
                 year = int(year)
-            except:
+            except (ValueError, TypeError):
                 year = 0
 
             paper = PaperMetadata(
