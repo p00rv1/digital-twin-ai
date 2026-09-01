@@ -51,33 +51,16 @@ class EmbeddingPipeline:
 
         chunks = self.load_chunks()
 
-        vectors = []
+        texts = [chunk["text"] for chunk in chunks]
+        metadata = list(chunks)
+        lookup = [chunk["chunk_id"] for chunk in chunks]
 
-        metadata = []
+        print(f"Generating embeddings for {len(chunks)} chunks using {self.embedder.model_name}...")
+        vectors = self.embedder.embed_batch(texts, batch_size=128)
 
-        lookup=[]
-
-        for chunk in chunks:
-
-            vector = self.embedder.embed(
-
-                chunk["text"]
-
-            )
-
-            vectors.append(vector)
-
-            metadata.append(chunk)
-
-            lookup.append(
-        chunk["chunk_id"]
-    )
         vectors = np.array(
-
             vectors,
-
             dtype=np.float32
-
         )
 
         np.save(

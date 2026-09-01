@@ -1,0 +1,20 @@
+# Python & Virtual Environments
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Git & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Local data & logs
+*.log
+scratch/
+.system_generated/
+.streamlit/

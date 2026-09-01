@@ -1,0 +1,133 @@
+{
+    "timestamp": "2026-09-01 15:17:28",
+    "benchmark_patient_count": 10,
+    "aggregate_scores": {
+        "faithfulness": 0.708,
+        "answer_relevance": 0.663,
+        "context_precision": 0.9,
+        "context_recall": 0.54,
+        "overall_ragas_index": 0.703
+    },
+    "patient_evaluations": [
+        {
+            "patient_id": 1,
+            "latency_seconds": 17.37,
+            "retrieval_quality": "MEDIUM",
+            "metrics": {
+                "faithfulness": 0.882,
+                "answer_relevance": 0.333,
+                "context_precision": 0.8,
+                "context_recall": 0.4
+            },
+            "diagnosis": "Chronic liver disease"
+        },
+        {
+            "patient_id": 2,
+            "latency_seconds": 17.43,
+            "retrieval_quality": "HIGH",
+            "metrics": {
+                "faithfulness": 0.769,
+                "answer_relevance": 0.5,
+                "context_precision": 1.0,
+                "context_recall": 0.6
+            },
+            "diagnosis": "Acute hepatic injury (acute liver dysfunction)"
+        },
+        {
+            "patient_id": 3,
+            "latency_seconds": 16.32,
+            "retrieval_quality": "HIGH",
+            "metrics": {
+                "faithfulness": 0.649,
+                "answer_relevance": 0.8,
+                "context_precision": 1.0,
+                "context_recall": 1.0
+            },
+            "diagnosis": "Cholestatic liver injury potentially related to heavy metal exposure"
+        },
+        {
+            "patient_id": 4,
+            "latency_seconds": 19.04,
+            "retrieval_quality": "MEDIUM",
+            "metrics": {
+                "faithfulness": 0.7,
+                "answer_relevance": 0.333,
+                "context_precision": 0.8,
+                "context_recall": 0.4
+            },
+            "diagnosis": "Mild hepatic dysfunction with a cholestatic pattern"
+        },
+        {
+            "patient_id": 5,
+            "latency_seconds": 19.04,
+            "retrieval_quality": "HIGH",
+            "metrics": {
+                "faithfulness": 0.649,
+                "answer_relevance": 1.0,
+                "context_precision": 1.0,
+                "context_recall": 0.2
+            },
+            "diagnosis": "Chronic liver disease (likely chronic hepatitis or early cirrhosis)"
+        },
+        {
+            "patient_id": 6,
+            "latency_seconds": 17.92,
+            "retrieval_quality": "HIGH",
+            "metrics": {
+                "faithfulness": 0.633,
+                "answer_relevance": 0.5,
+                "context_precision": 1.0,
+                "context_recall": 0.8
+            },
+            "diagnosis": "Mild hepatic dysfunction indicated by hyperbilirubinemia (total bilirubin > 2 mg/dL)"
+        },
+        {
+            "patient_id": 7,
+            "latency_seconds": 16.64,
+            "retrieval_quality": "MEDIUM",
+            "metrics": {
+                "faithfulness": 0.759,
+                "answer_relevance": 1.0,
+                "context_precision": 0.8,
+                "context_recall": 0.6
+            },
+            "diagnosis": "Mild hepatic dysfunction (early liver injury)"
+        },
+        {
+            "patient_id": 8,
+            "latency_seconds": 16.65,
+            "retrieval_quality": "MEDIUM",
+            "metrics": {
+                "faithfulness": 0.68,
+                "answer_relevance": 0.5,
+                "context_precision": 1.0,
+                "context_recall": 0.4
+            },
+            "diagnosis": "Normal liver function with mild cholestatic enzyme elevation"
+        },
+        {
+            "patient_id": 9,
+            "latency_seconds": 15.95,
+            "retrieval_quality": "HIGH",
+            "metrics": {
+                "faithfulness": 0.729,
+                "answer_relevance": 1.0,
+                "context_precision": 1.0,
+                "context_recall": 0.6
+            },
+            "diagnosis": "Normal liver function; no evidence of hepatic pathology"
+        },
+        {
+            "patient_id": 10,
+            "latency_seconds": 16.96,
+            "retrieval_quality": "MEDIUM",
+            "metrics": {
+                "faithfulness": 0.633,
+                "answer_relevance": 0.667,
+                "context_precision": 0.6,
+                "context_recall": 0.4
+            },
+            "diagnosis": "Mild hepatic injury with elevated transaminases and alkaline phosphatase"
+        }
+    ]
+}

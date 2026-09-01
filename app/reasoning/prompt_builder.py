@@ -86,7 +86,7 @@ Change    : {analytics['percent_change']}%
             )
 
             prompt.append(
-                f"Text:\n{paper.get('text','')}"
+                f"Text:\n{paper.get('text','')[:1000]}"
             )
 
             prompt.append("\n")

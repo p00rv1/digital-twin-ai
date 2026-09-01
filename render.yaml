@@ -1,0 +1,30 @@
+services:
+  # FastAPI REST API Backend Web Service
+  - type: web
+    name: digital-twin-fastapi-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: uvicorn app.api.main:app --host 0.0.0.0 --port 8000
+    plan: free
+    region: oregon
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 8000
+
+  # Streamlit Clinical UI Dashboard Web Service
+  - type: web
+    name: digital-twin-streamlit-dashboard
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: streamlit run streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    plan: free
+    region: oregon
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false

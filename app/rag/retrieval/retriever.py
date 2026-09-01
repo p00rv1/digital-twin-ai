@@ -4,8 +4,7 @@ import json
 
 import numpy as np
 
-from sentence_transformers import SentenceTransformer
-
+from app.rag.embeddings.embedder import MedicalEmbedder
 from .faiss_index import FAISSIndex
 
 
@@ -18,58 +17,31 @@ class MedicalRetriever:
         embedding_dir = root / "knowledge" / "embeddings"
 
         self.lookup = json.load(
-
             open(
-
-                embedding_dir /
-                "chunk_lookup.json",
-
+                embedding_dir / "chunk_lookup.json",
                 encoding="utf-8"
-
             )
-
         )
 
         self.metadata = json.load(
-
             open(
-
-                embedding_dir /
-                "metadata_by_id.json",
-
+                embedding_dir / "metadata_by_id.json",
                 encoding="utf-8"
-
             )
-
         )
 
-        self.model = SentenceTransformer(
-
-            "BAAI/bge-small-en-v1.5"
-
-        )
-
+        self.embedder = MedicalEmbedder()
         self.index = FAISSIndex().load()
 
     def embed_query(
         self,
         query
     ):
-
-        vector = self.model.encode(
-
-            query,
-
-            normalize_embeddings=True
-
-        )
+        vector = self.embedder.embed(query)
 
         return np.array(
-
             [vector],
-
             dtype=np.float32
-
         )
     def search(
 

@@ -37,13 +37,17 @@ analyze = st.sidebar.button(
     use_container_width=True
 )
 
+@st.cache_resource(show_spinner="Loading AI Diagnosis Pipeline & Medical Models...")
+def get_pipeline():
+    return DiagnosisPipeline()
+
 # ---------------------------------------------------
 # Run Pipeline
 # ---------------------------------------------------
 
 if analyze:
 
-    pipeline = DiagnosisPipeline()
+    pipeline = get_pipeline()
 
     with st.spinner("Analyzing patient..."):
 
@@ -60,6 +64,11 @@ if analyze:
 
     st.header("🩺 Patient Snapshot")
 
+    age = snapshot.get("age", 45)
+    gender = snapshot.get("gender", "Unknown")
+
+    st.caption(f"**Age:** {age} | **Gender:** {gender}")
+
     biomarker_data = []
 
     biomarkers = snapshot.get("biomarkers", {})
@@ -75,7 +84,7 @@ if analyze:
         if analytics is None:
             continue
 
-        latest = round(analytics["latest"],2)
+        latest = round(analytics["latest"], 2)
 
         change = analytics["percent_change"]
 
@@ -88,13 +97,9 @@ if analyze:
         )
 
         biomarker_data.append({
-
             "Biomarker": biomarker.upper(),
-
             "Latest": latest,
-
             "Change": change
-
         })
 
         i += 1
@@ -102,10 +107,40 @@ if analyze:
     st.divider()
 
     # =====================================================
-    # Biomarker Trends
+    # Clinical Risk & Fibrosis Scoring
     # =====================================================
 
-    st.header("📈 Biomarker Trends")
+    st.header("📊 Clinical Risk & Fibrosis Assessment")
+
+    clinical_scores = snapshot.get("clinical_scores", {})
+
+    r_col1, r_col2, r_col3 = st.columns(3)
+
+    with r_col1:
+        fib4 = clinical_scores.get("fib4_index")
+        fib4_risk = clinical_scores.get("fib4_risk", "N/A")
+        st.metric("FIB-4 Index", fib4 if fib4 is not None else "N/A")
+        st.caption(f"**Risk Tier:** {fib4_risk}")
+
+    with r_col2:
+        de_ritis = clinical_scores.get("de_ritis_ratio")
+        de_ritis_risk = clinical_scores.get("de_ritis_risk", "N/A")
+        st.metric("De Ritis Ratio (AST/ALT)", de_ritis if de_ritis is not None else "N/A")
+        st.caption(f"**Pattern:** {de_ritis_risk}")
+
+    with r_col3:
+        apri = clinical_scores.get("apri_score")
+        apri_risk = clinical_scores.get("apri_risk", "N/A")
+        st.metric("APRI Score", apri if apri is not None else "N/A")
+        st.caption(f"**Risk Tier:** {apri_risk}")
+
+    st.divider()
+
+    # =====================================================
+    # Biomarker Trends & ML Trajectory Forecasting
+    # =====================================================
+
+    st.header("📈 Biomarker Trends & 6-Month Trajectory Projection")
 
     selected = st.selectbox(
         "Choose Biomarker",
@@ -113,19 +148,49 @@ if analyze:
     )
 
     history = biomarkers[selected]["history"]
+    analytics = biomarkers[selected]["analytics"]
 
     if history:
+        import plotly.graph_objects as go
 
         df = pd.DataFrame(history)
-
         df["date"] = pd.to_datetime(df["date"])
 
-        fig = px.line(
-            df,
-            x="date",
-            y="value",
-            markers=True,
-            title=f"{selected.upper()} Trend"
+        fig = go.Figure()
+
+        # Historical curve
+        fig.add_trace(go.Scatter(
+            x=df["date"],
+            y=df["value"],
+            mode='lines+markers',
+            name='Historical Lab Value',
+            line=dict(color='#1f77b4', width=3),
+            marker=dict(size=8)
+        ))
+
+        # Add Forecast points if available
+        if analytics and analytics.get("forecast"):
+            forecast = analytics["forecast"]
+            last_date = df["date"].iloc[-1]
+            last_val = df["value"].iloc[-1]
+
+            f_dates = [last_date, pd.to_datetime(forecast["future_date_90d"]), pd.to_datetime(forecast["future_date_180d"])]
+            f_vals = [last_val, forecast["projected_90d"], forecast["projected_180d"]]
+
+            fig.add_trace(go.Scatter(
+                x=f_dates,
+                y=f_vals,
+                mode='lines+markers',
+                name=f'ML Projection ({forecast["trajectory"]})',
+                line=dict(color='#ff7f0e', width=3, dash='dash'),
+                marker=dict(size=8, symbol='diamond')
+            ))
+
+        fig.update_layout(
+            title=f"{selected.upper()} Historical & Projected Trajectory",
+            xaxis_title="Date",
+            yaxis_title="Value",
+            hovermode="x unified"
         )
 
         st.plotly_chart(
@@ -135,6 +200,7 @@ if analyze:
 
     st.divider()
 
+
     # =====================================================
     # Generated Query
     # =====================================================
@@ -143,40 +209,48 @@ if analyze:
 
     st.code(query)
 
+    if result.get("crag_triggered"):
+        with st.expander("⚡ Corrective RAG (CRAG) Triggered — Expanded Queries Used"):
+            st.info("Initial retrieval relevance score was low (< 0.35). CRAG expanded the search across 3 domain sub-queries:")
+            for idx, eq in enumerate(result.get("expanded_queries", []), 1):
+                st.write(f"**Sub-query {idx}:** `{eq}`")
+
     st.divider()
 
     # =====================================================
-    # Retrieved Papers
+    # Retrieved Papers & CRAG Quality Indicator
     # =====================================================
 
-    st.header("📚 Retrieved Evidence")
+    e_col1, e_col2 = st.columns([3, 1])
+    with e_col1:
+        st.header("📚 Retrieved Evidence")
+    with e_col2:
+        quality = result.get("retrieval_quality", "HIGH")
+        avg_score = result.get("avg_relevance_score", 0.0)
+        st.caption(f"**Retrieval Quality:** `{quality}`")
+        if avg_score > 0:
+            st.caption(f"**Mean Relevance:** `{avg_score:.3f}`")
 
     if len(evidence) == 0:
-
         st.warning("No papers retrieved.")
-
     else:
-
         for i, paper in enumerate(evidence):
-
-            title = paper.get("paper_title", "Unknown Title")
-            journal = paper.get("journal", "")
-            pmcid = paper.get("paper_id", "")
-            score = paper.get("score", None)
+            title = paper.get("title") or paper.get("paper_title") or "Medical Literature Chunk"
+            journal = paper.get("journal", "PubMed Central")
+            pmcid = paper.get("pmcid") or paper.get("paper_id") or paper.get("chunk_id", "")
+            score = paper.get("rerank_score") if paper.get("rerank_score") is not None else paper.get("score", None)
             text = paper.get("text", "")
 
             with st.expander(f"Paper {i+1}: {title}"):
-
                 st.write(f"**Journal:** {journal}")
-
-                st.write(f"**PMCID:** {pmcid}")
-
+                st.write(f"**PMCID / Chunk ID:** `{pmcid}`")
                 if score is not None:
-                    st.write(f"**Similarity Score:** {score:.3f}")
-
-                st.write(text[:1000] + "...")
+                    st.write(f"**Relevance Score:** `{score:.3f}`")
+                st.markdown("**Excerpt:**")
+                st.write(text[:1000] + ("..." if len(text) > 1000 else ""))
 
     st.divider()
+
 
     # =====================================================
     # Diagnosis
@@ -237,3 +311,7 @@ if analyze:
     else:
 
         st.write(diagnosis)
+
+else:
+
+    st.info("👈 **Welcome to Digital Twin AI Decision Support System**\n\nSelect a Patient ID from the sidebar and click **Analyze Patient** to view patient snapshot, biomarker trends, clinical evidence, and AI diagnosis.")
