@@ -51,11 +51,12 @@ class BM25Retriever:
         k=10
     ):
 
-        query_tokens = nltk.word_tokenize(
+        try:
+            query_tokens = nltk.word_tokenize(query.lower())
+        except Exception:
+            import re
+            query_tokens = re.findall(r'\w+', query.lower())
 
-            query.lower()
-
-        )
 
         scores = self.bm25.get_scores(
 
