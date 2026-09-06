@@ -28,8 +28,11 @@ venv/
 knowledge/raw/
 knowledge/parsed/
 knowledge/chunks/
-knowledge/embeddings/
-knowledge/index/
+knowledge/embeddings/*.npy
+knowledge/embeddings/metadata.json
+knowledge/qdrant_db/
+!knowledge/embeddings/chunk_lookup.json
+!knowledge/embeddings/metadata_by_id.json
 
 # OS
 .DS_Store
