@@ -140,12 +140,14 @@ def compute_clinical_scores(patient_age, latest_biomarkers):
 
 def get_biomarker_analytics(
     patient_id,
-    biomarker
+    biomarker,
+    history=None
 ):
-    history = get_history(
-        patient_id,
-        biomarker
-    )
+    if history is None:
+        history = get_history(
+            patient_id,
+            biomarker
+        )
 
     if not history:
         return None

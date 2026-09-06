@@ -1,4 +1,4 @@
-from app.services.history_service import get_history
+from app.services.history_service import get_history, get_all_patient_history
 from app.services.analytics_service import get_biomarker_analytics, compute_clinical_scores
 from app.database.db import SessionLocal
 from app.database.models import Patient
@@ -8,6 +8,7 @@ from app.config.biomarkers import LIVER_MARKERS
 def get_patient_snapshot(patient_id):
     age = 45
     gender = "Unknown"
+    db_connected = True
 
     try:
         db = SessionLocal()
@@ -18,6 +19,7 @@ def get_patient_snapshot(patient_id):
             gender = patient_record.gender if patient_record.gender else "Unknown"
     except Exception as e:
         print(f"Warning: Database snapshot query failed ({e}). Using resilient fallback snapshot.")
+        db_connected = False
 
     snapshot = {
         "patient_id": patient_id,
@@ -25,19 +27,21 @@ def get_patient_snapshot(patient_id):
         "gender": gender,
         "biomarkers": {},
         "clinical_scores": {},
-        "db_connected": True
+        "db_connected": db_connected
     }
 
     latest_biomarkers = {}
 
+    try:
+        all_history = get_all_patient_history(patient_id)
+    except Exception as e:
+        print(f"Warning: get_all_patient_history failed ({e})")
+        all_history = {}
+        snapshot["db_connected"] = False
+
     for biomarker in LIVER_MARKERS:
-        try:
-            history = get_history(patient_id, biomarker)
-            analytics = get_biomarker_analytics(patient_id, biomarker)
-        except Exception as e:
-            print(f"Warning: Biomarker fetch failed for {biomarker} ({e}). Using mock history.")
-            history = []
-            analytics = None
+        history = all_history.get(biomarker, [])
+        analytics = get_biomarker_analytics(patient_id, biomarker, history=history) if history else None
 
         if analytics and "latest" in analytics:
             latest_biomarkers[biomarker] = analytics["latest"]
@@ -55,7 +59,6 @@ def get_patient_snapshot(patient_id):
 
     # If database returned empty biomarkers, provide realistic clinical demonstration fallback
     if not any(info.get("history") for info in snapshot["biomarkers"].values()):
-        snapshot["db_connected"] = False
         snapshot["biomarkers"] = get_fallback_biomarkers()
         latest_biomarkers = {b: info["analytics"]["latest"] for b, info in snapshot["biomarkers"].items() if info.get("analytics")}
 

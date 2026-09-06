@@ -1,5 +1,4 @@
-import gc
-
+import os
 
 class MedicalReranker:
 
@@ -13,7 +12,8 @@ class MedicalReranker:
         if self._model is None:
             try:
                 import torch
-                torch.set_num_threads(1)
+                threads = max(1, os.cpu_count() or 4)
+                torch.set_num_threads(threads)
             except Exception:
                 pass
             from sentence_transformers import CrossEncoder
@@ -29,28 +29,25 @@ class MedicalReranker:
         if not documents or len(documents) == 0:
             return []
 
+        # Limit candidate reranking pool to top 12 chunks for high speed while maintaining accuracy
+        candidate_docs = documents[:12]
+
         pairs = [
-            (
-                query,
-                doc["text"]
-            )
-            for doc in documents
+            (query, doc.get("text", ""))
+            for doc in candidate_docs
         ]
 
         scores = self.model.predict(
-            pairs
+            pairs,
+            batch_size=12
         )
 
-        for score, doc in zip(
-            scores,
-            documents
-        ):
+        for score, doc in zip(scores, candidate_docs):
             doc["rerank_score"] = float(score)
 
-        documents.sort(
+        candidate_docs.sort(
             key=lambda x: x["rerank_score"],
             reverse=True
         )
 
-        gc.collect()
-        return documents[:top_k]
+        return candidate_docs[:top_k]
