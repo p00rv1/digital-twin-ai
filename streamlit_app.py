@@ -70,13 +70,14 @@ cols = st.columns(4)
 
 i = 0
 for biomarker, info in biomarkers.items():
-    analytics = info["analytics"]
+    analytics = info.get("analytics")
     if analytics is None:
         continue
 
-    latest = round(analytics["latest"], 2)
-    change = analytics["percent_change"]
-    arrow = "⬆️" if change >= 0 else "⬇️"
+    latest_val = analytics.get("latest", 0.0)
+    latest = round(float(latest_val), 2) if isinstance(latest_val, (int, float)) else latest_val
+    change = analytics.get("percent_change", 0.0)
+    arrow = "⬆️" if isinstance(change, (int, float)) and change >= 0 else "⬇️"
 
     cols[i % 4].metric(
         biomarker.upper(),

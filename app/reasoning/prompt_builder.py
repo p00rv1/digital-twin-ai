@@ -40,22 +40,27 @@ class PromptBuilder:
 
         prompt.append("Biomarker Summary:\n")
 
-        for biomarker, info in snapshot["biomarkers"].items():
-
-            analytics = info["analytics"]
-
+        for biomarker, info in snapshot.get("biomarkers", {}).items():
+            analytics = info.get("analytics")
             if analytics is None:
                 continue
+
+            latest_val = analytics.get("latest", "N/A")
+            first_val = analytics.get("first", latest_val)
+            min_val = analytics.get("min", "N/A")
+            max_val = analytics.get("max", "N/A")
+            mean_val = analytics.get("mean", "N/A")
+            change_val = analytics.get("percent_change", 0)
 
             prompt.append(
                 f"""
 Biomarker : {biomarker}
-Latest    : {analytics['latest']}
-First     : {analytics['first']}
-Minimum   : {analytics['min']}
-Maximum   : {analytics['max']}
-Mean      : {analytics['mean']}
-Change    : {analytics['percent_change']}%
+Latest    : {latest_val}
+First     : {first_val}
+Minimum   : {min_val}
+Maximum   : {max_val}
+Mean      : {mean_val}
+Change    : {change_val}%
 """
             )
 

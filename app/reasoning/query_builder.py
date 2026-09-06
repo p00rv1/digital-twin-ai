@@ -6,14 +6,14 @@ class QueryBuilder:
     def build(self, snapshot):
         parts = []
 
-        for biomarker, info in snapshot["biomarkers"].items():
-            analytics = info["analytics"]
+        for biomarker, info in snapshot.get("biomarkers", {}).items():
+            analytics = info.get("analytics")
 
             if analytics is None:
                 continue
 
-            latest = analytics["latest"]
-            change = analytics["percent_change"]
+            latest = analytics.get("latest", "N/A")
+            change = analytics.get("percent_change", 0)
 
             parts.append(
                 f"{biomarker} latest {latest}"

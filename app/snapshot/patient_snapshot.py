@@ -71,23 +71,23 @@ def get_fallback_biomarkers():
     return {
         "alt": {
             "history": [{"date": "2025-01-15", "value": 35.0}, {"date": "2025-06-15", "value": 48.2}, {"date": "2025-12-01", "value": 62.5}],
-            "analytics": {"latest": 62.5, "percent_change": 78.5, "forecast": {"projected_90d": 71.0, "projected_180d": 79.5, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Elevated / Escalating ⚠️"}}
+            "analytics": {"biomarker": "alt", "first": 35.0, "latest": 62.5, "min": 35.0, "max": 62.5, "mean": 48.57, "percent_change": 78.57, "forecast": {"projected_90d": 71.0, "projected_180d": 79.5, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Elevated / Escalating ⚠️"}}
         },
         "ast": {
             "history": [{"date": "2025-01-15", "value": 28.0}, {"date": "2025-06-15", "value": 38.0}, {"date": "2025-12-01", "value": 52.0}],
-            "analytics": {"latest": 52.0, "percent_change": 85.7, "forecast": {"projected_90d": 58.5, "projected_180d": 65.0, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Elevated / Escalating ⚠️"}}
+            "analytics": {"biomarker": "ast", "first": 28.0, "latest": 52.0, "min": 28.0, "max": 52.0, "mean": 39.33, "percent_change": 85.71, "forecast": {"projected_90d": 58.5, "projected_180d": 65.0, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Elevated / Escalating ⚠️"}}
         },
         "alp": {
             "history": [{"date": "2025-01-15", "value": 110.0}, {"date": "2025-06-15", "value": 145.0}, {"date": "2025-12-01", "value": 195.4}],
-            "analytics": {"latest": 195.4, "percent_change": 77.6, "forecast": {"projected_90d": 215.0, "projected_180d": 235.0, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Elevated / Escalating ⚠️"}}
+            "analytics": {"biomarker": "alp", "first": 110.0, "latest": 195.4, "min": 110.0, "max": 195.4, "mean": 150.13, "percent_change": 77.64, "forecast": {"projected_90d": 215.0, "projected_180d": 235.0, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Elevated / Escalating ⚠️"}}
         },
         "tbil": {
             "history": [{"date": "2025-01-15", "value": 0.6}, {"date": "2025-06-15", "value": 0.65}, {"date": "2025-12-01", "value": 0.71}],
-            "analytics": {"latest": 0.71, "percent_change": 18.3, "forecast": {"projected_90d": 0.75, "projected_180d": 0.80, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Stable 🟢"}}
+            "analytics": {"biomarker": "tbil", "first": 0.6, "latest": 0.71, "min": 0.6, "max": 0.71, "mean": 0.65, "percent_change": 18.33, "forecast": {"projected_90d": 0.75, "projected_180d": 0.80, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Stable 🟢"}}
         },
         "albumin": {
             "history": [{"date": "2025-01-15", "value": 4.2}, {"date": "2025-06-15", "value": 3.6}, {"date": "2025-12-01", "value": 3.08}],
-            "analytics": {"latest": 3.08, "percent_change": -26.6, "forecast": {"projected_90d": 2.85, "projected_180d": 2.65, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Declining 🔴"}}
+            "analytics": {"biomarker": "albumin", "first": 4.2, "latest": 3.08, "min": 3.08, "max": 4.2, "mean": 3.63, "percent_change": -26.67, "forecast": {"projected_90d": 2.85, "projected_180d": 2.65, "future_date_90d": "2026-03-01", "future_date_180d": "2026-06-01", "trajectory": "Declining 🔴"}}
         }
     }
 
