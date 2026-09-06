@@ -21,8 +21,9 @@ venv/
 # Logs
 *.log
 
-# Streamlit cache
-.streamlit/
+# Streamlit cache and secrets
+.streamlit/*
+!.streamlit/config.toml
 
 # Large generated data
 knowledge/raw/
