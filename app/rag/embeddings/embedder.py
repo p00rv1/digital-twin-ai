@@ -1,5 +1,5 @@
 import re
-import gc
+import os
 
 ABBREVIATION_MAP = {
     r"\btbil\b": "total bilirubin",
@@ -33,7 +33,8 @@ class MedicalEmbedder:
         if self._model is None:
             try:
                 import torch
-                torch.set_num_threads(1)
+                threads = max(1, os.cpu_count() or 4)
+                torch.set_num_threads(threads)
             except Exception:
                 pass
             from sentence_transformers import SentenceTransformer
@@ -49,7 +50,6 @@ class MedicalEmbedder:
             normalized,
             normalize_embeddings=True
         )
-        gc.collect()
         return vector
 
     def embed_batch(self, texts: list[str], batch_size: int = 32):
@@ -57,10 +57,9 @@ class MedicalEmbedder:
         vectors = self.model.encode(
             normalized_texts,
             batch_size=batch_size,
-            show_progress_bar=True,
+            show_progress_bar=False,
             normalize_embeddings=True
         )
-        gc.collect()
         return vectors
 
 

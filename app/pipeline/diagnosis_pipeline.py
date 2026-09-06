@@ -18,16 +18,27 @@ class DiagnosisPipeline:
         self.prompt_builder = PromptBuilder()
         self.llm = LLMService()
 
+        # Pre-warm ML models so patient analysis clicks are instant
+        try:
+            if self.retriever.faiss and hasattr(self.retriever.faiss, "embedder"):
+                _ = self.retriever.faiss.embedder.model
+            if hasattr(self.reranker, "model"):
+                _ = self.reranker.model
+        except Exception as e:
+            print(f"Model pre-warm warning: {e}")
+
     def run(
         self,
-        patient_id
+        patient_id,
+        snapshot=None
     ):
         # -----------------------
         # Patient Snapshot
         # -----------------------
-        snapshot = get_patient_snapshot(
-            patient_id
-        )
+        if snapshot is None:
+            snapshot = get_patient_snapshot(
+                patient_id
+            )
 
         # -----------------------
         # Primary Clinical Query

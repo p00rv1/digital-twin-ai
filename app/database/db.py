@@ -6,24 +6,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DEFAULT_DB_URL = "postgresql://postgres:poorvi@localhost:5434/health_twin"
-DATABASE_URL = os.getenv("DATABASE_URL")
+from app.config.settings import DATABASE_URL, get_secret
 
-if not DATABASE_URL:
-    try:
-        import streamlit as st
-        if "DATABASE_URL" in st.secrets:
-            DATABASE_URL = st.secrets["DATABASE_URL"]
-    except Exception:
-        pass
+# Dynamically re-evaluate DATABASE_URL if st.secrets is populated during Streamlit execution
+if not DATABASE_URL or "localhost" in DATABASE_URL:
+    resolved = get_secret("DATABASE_URL", DATABASE_URL)
+    if resolved:
+        DATABASE_URL = resolved
 
-if not DATABASE_URL:
-    DATABASE_URL = DEFAULT_DB_URL
-
-# Enable connect_timeout=5 to fail fast instead of hanging on unreachable database URLs
+# Enable connect_timeout=15 to allow Neon cloud database instances time to wake up from sleep
 connect_args = {}
 if "postgresql" in DATABASE_URL:
-    connect_args["connect_timeout"] = 5
+    connect_args["connect_timeout"] = 15
 
 engine = create_engine(
     DATABASE_URL,
@@ -31,6 +25,14 @@ engine = create_engine(
     pool_recycle=300,
     connect_args=connect_args
 )
+
+def init_db_tables():
+    """Helper to ensure database tables are created."""
+    try:
+        from app.database.models import Base
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Warning: Could not auto-create database tables ({e}).")
 
 
 SessionLocal = sessionmaker(

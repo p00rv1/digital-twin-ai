@@ -189,7 +189,7 @@ if analyze:
     pipeline = get_pipeline()
 
     status_box.write("Step 2/3: Searching PubMed Literature & Re-ranking Evidence...")
-    result = pipeline.run(patient_id)
+    result = pipeline.run(patient_id, snapshot=snapshot)
     status_box.write("Step 3/3: Generating Evidence-Based Diagnosis via Groq LLM...")
     status_box.update(label="✅ Clinical AI Pipeline Completed!", state="complete", expanded=False)
 

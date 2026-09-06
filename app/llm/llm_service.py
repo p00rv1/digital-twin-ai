@@ -13,13 +13,14 @@ class LLMService:
         else:
             self.client = None
 
-        self.model = "qwen/qwen3.6-27b"
-        self.fallback_model = "openai/gpt-oss-20b"
+        self.model = "openai/gpt-oss-20b"
+        self.fallback_model = "qwen/qwen3.6-27b"
 
     def _call_groq(self, messages, model_name):
         return self.client.chat.completions.create(
             model=model_name,
             temperature=0.2,
+            max_tokens=1200,
             response_format={"type": "json_object"},
             messages=messages
         )
