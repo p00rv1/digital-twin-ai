@@ -3,6 +3,7 @@ pandas
 plotly
 groq
 python-dotenv
+pyyaml
 faiss-cpu
 numpy
 sentence-transformers

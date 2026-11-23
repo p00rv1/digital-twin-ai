@@ -13,8 +13,8 @@ class LLMService:
         else:
             self.client = None
 
-        self.model = "openai/gpt-oss-20b"
-        self.fallback_model = "qwen/qwen3.6-27b"
+        self.model = "llama-3.3-70b-versatile"
+        self.fallback_model = "llama-3.1-8b-instant"
 
     def _call_groq(self, messages, model_name):
         return self.client.chat.completions.create(

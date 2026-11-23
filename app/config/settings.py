@@ -13,8 +13,8 @@ def get_secret(key: str, default: str = "") -> str:
     if not val:
         try:
             import streamlit as st
-            if hasattr(st, "secrets"):
-                sec = st.secrets
+            sec = getattr(st, "secrets", None)
+            if sec:
                 # 1. Direct top-level lookup
                 if key in sec:
                     val = sec[key]
@@ -33,14 +33,14 @@ def get_secret(key: str, default: str = "") -> str:
                     g_sec = sec["groq"]
                     if isinstance(g_sec, dict) or hasattr(g_sec, "get"):
                         val = g_sec.get(key) or g_sec.get(key.lower()) or g_sec.get("api_key")
-        except Exception as e:
-            print(f"Warning: st.secrets lookup for {key} encountered error ({e})")
+        except Exception:
+            pass
 
     return str(val).strip() if val else default
 
 
 GROQ_API_KEY = get_secret("GROQ_API_KEY", "")
 DATABASE_URL = get_secret("DATABASE_URL", "postgresql://postgres:poorvi@localhost:5434/health_twin")
-HOST = get_secret("HOST", "0.0.0.0")
-PORT = int(get_secret("PORT", "8000"))
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = int(os.getenv("PORT", "8000"))
 

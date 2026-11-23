@@ -3,7 +3,13 @@ import json
 import pickle
 
 import nltk
-nltk.download('punkt_tab')
+try:
+    nltk.data.find('tokenizers/punkt_tab')
+except (LookupError, Exception):
+    try:
+        nltk.download('punkt_tab', quiet=True)
+    except Exception:
+        pass
 from rank_bm25 import BM25Okapi
 
 

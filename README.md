@@ -1,5 +1,7 @@
 # 🧬 Digital Twin AI — Hybrid Clinical Decision Support System (CDSS)
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://digital-twin-ai-muak2qijqkvmjxvdfnsguw.streamlit.app/)
+
 Evidence-based clinical decision support system for liver health monitoring using **Hybrid RAG**, **Corrective RAG (CRAG)**, **Pydantic Schema Validation**, **FastAPI REST API**, and a **Streamlit Web Dashboard**.
 
 ---

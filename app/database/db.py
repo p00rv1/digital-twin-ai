@@ -14,17 +14,23 @@ if not DATABASE_URL or "localhost" in DATABASE_URL:
     if resolved:
         DATABASE_URL = resolved
 
+if not DATABASE_URL:
+    DATABASE_URL = "sqlite:///./fallback.db"
+
 # Enable connect_timeout=15 to allow Neon cloud database instances time to wake up from sleep
 connect_args = {}
 if "postgresql" in DATABASE_URL:
     connect_args["connect_timeout"] = 15
 
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    connect_args=connect_args
-)
+try:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        connect_args=connect_args
+    )
+except Exception:
+    engine = create_engine("sqlite:///./fallback.db")
 
 def init_db_tables():
     """Helper to ensure database tables are created."""
